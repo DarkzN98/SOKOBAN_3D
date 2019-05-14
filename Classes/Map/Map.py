@@ -10,8 +10,8 @@ class Map:
         self.size = size
         self.player = Player(0,0)
         self.goals_count = 0
-        self.objectives = Objective(3,3)
-        self.goals = Goal(4,4)
+        self.objectives = Objective(0,0)
+        self.goals = Goal(0,0)
 
         # Build Empty Array
         self.tiles = []
@@ -20,7 +20,7 @@ class Map:
 
         # Print Results
         print("Map Initialized With Size",size)
-        self.print_map()
+        # self.print_map()
 
     def print_map(self):
         for i in range(len(self.tiles)):
@@ -107,23 +107,99 @@ class Map:
             self.tiles[self.player.y][self.player.x] = 2
 
 class Map_Builder:
+
+    game_mode = 0
+    current_level = 0
+
     def __init__(self):
         print("Map Builder is Initialized")
 
-    def build_map(self,level):
-        print("Building Map",level)
-        new_map = Map(5)
-        self.build_walls(new_map)
-        self.place_player(new_map)
-        new_map.tiles[new_map.objectives.y][new_map.objectives.x] = 3
+    def build_map(self):
+        if self.mode == 0:
+            # Build First Map
+            print("")
+            print("###################")
+            print("BUILDING MAP {}".format(self.current_level))
+            print("###################")
+            return self.build_level_map()
+        elif self.mode == 1:
+            # Build Random Map
+            print("")
+            print("#######################")
+            print("BUILDING RANDOM MAP {}".format(self.current_level))
+            print("#######################")
+            return self.build_random_map()
+
+    def build_level_map(self):
+        print("Building Map")
+        
+        if self.current_level == 0:
+            # Level Pertama
+            new_map = Map(15)
+            new_map.tiles = [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,1,1,1,1,0,0,0,0,0,0,0,0,0,1],
+                    [1,1,1,1,1,0,0,0,0,0,0,0,0,0,1],
+                    [1,0,0,0,1,0,0,1,1,1,1,0,0,0,1],
+                    [1,0,0,0,0,0,0,0,0,0,1,1,1,0,1],
+                    [1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+                    [1,1,1,1,1,0,0,0,0,0,0,0,1,0,1],
+                    [1,1,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                    [1,1,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                    [1,1,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                    [1,1,1,0,0,0,0,0,1,1,1,1,1,0,1],
+                    [1,1,1,0,0,0,0,0,1,1,1,1,1,0,1],
+                    [1,1,1,0,0,0,0,0,1,1,1,1,1,0,1],
+                    [1,1,1,0,0,0,0,0,1,1,1,1,1,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
+            self.place_player_at(new_map,2,4)
+            self.place_goal_at(new_map,13,13)
+            self.place_objective_at(new_map,4,12)
+        elif self.current_level == 1:
+            new_map = Map(15)
+            new_map.tiles =[
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,3,0,0,1,0,0,1,1,1,0,0,1],
+            [1,0,0,1,1,0,1,0,0,1,1,1,0,0,1],
+            [1,0,0,0,0,0,0,1,1,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,1,1,0,0,0,0,0,1],
+            [1,0,0,1,1,1,1,1,1,0,0,0,0,0,1],
+            [1,0,0,1,1,1,1,1,1,0,0,0,0,0,1],
+            [1,0,0,1,1,0,0,0,0,0,0,1,1,1,1],
+            [1,0,0,1,1,0,0,0,1,1,0,1,1,1,1],
+            [1,0,0,0,1,1,0,0,1,1,0,0,0,0,1],
+            [1,0,0,0,1,1,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,4,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
+            self.place_player_at(new_map,1,1)
+            self.place_goal_at(new_map,13,13)
+            self.place_objective_at(new_map,3,3)
+        else:
+            print("Story Mode Done!")
+            quit()
+
         return new_map
+
+    def place_player_at(self, map, coord_x, coord_y):
+        map.player = Player(coord_x, coord_y)
+        map.tiles[map.player.y][map.player.x] = 2
+
+    def place_goal_at(self, map, coord_x, coord_y):
+        map.goals = Goal(coord_x,coord_y)
+        map.tiles[map.goals.y][map.goals.x] = 4
+
+    def place_objective_at(self, map, coord_x, coord_y):
+        map.objectives = Objective(coord_x, coord_y)
+        map.tiles[map.objectives.y][map.objectives.x] = 3
 
     def build_random_map(self):
         print("Building Random Map")
         random_size = randrange(7,15)
         new_map = Map(random_size)
         self.build_walls(new_map)
-        self.place_player(new_map)
+        self.place_random_player(new_map)
         self.place_random_goal(new_map)
         self.place_random_objective(new_map)
         return new_map
@@ -136,10 +212,8 @@ class Map_Builder:
                     tiles[i][j] = 1
         print("Build Walls Success")
 
-    def place_player(self, map):
-        map.player = Player(randrange(1,len(map.tiles[0])-2), randrange(1,len(map.tiles)-2))
-        map.tiles[map.player.y][map.player.x] = 2
-        print("Place Player Success")
+    def place_random_player(self, map):
+        self.place_player_at(map, randrange(1,len(map.tiles[0])-2),randrange(1,len(map.tiles)-2))
 
     def place_random_goal(self, map):
         rand_x = 0
@@ -148,8 +222,7 @@ class Map_Builder:
         while map.tiles[rand_y][rand_x] != 0:
             rand_x = randrange(1,len(map.tiles[0])-2)
             rand_y = randrange(1,len(map.tiles)-2)
-        map.goals = Goal(rand_x,rand_y)
-        map.tiles[map.goals.y][map.goals.x] = 4
+        self.place_goal_at(map, rand_x,rand_y)
 
     def place_random_objective(self, map):
         rand_x = 0
@@ -157,5 +230,9 @@ class Map_Builder:
         while map.tiles[rand_y][rand_x] != 0:
             rand_x = randrange(2,len(map.tiles[0])-3)
             rand_y = randrange(2,len(map.tiles)-3)
-        map.objectives = Objective(rand_x, rand_y)
-        map.tiles[map.objectives.y][map.objectives.x] = 3
+        self.place_objective_at(map, rand_x, rand_y)
+
+    def set_mode(self, mode):
+        self.mode = mode
+        print("Build Mode Set To : {}".format(self.mode))
+

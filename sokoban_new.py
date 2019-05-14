@@ -38,14 +38,19 @@ def main():
     mouse_rotate = False
     mouse_move = False
 
+    # Set Game Mode
+    # Mode 0 : Story
+    # Mode 1 : Random
+    game_mode = 1
+
     # CREATE CLASSES
     builder = Map.Map_Builder()
-    hasil_build = builder.build_map(3)
+    builder.set_mode(game_mode)
+    hasil_build = builder.build_map()
     # print(hasil_build)
 
     # MAIN GAME LOOP
     pygame.key.set_repeat(16,100)
-
 
     while True:
         clock.tick(120)
@@ -72,8 +77,8 @@ def main():
             elif event.type == KEYDOWN:
                 # print(event)
                 if event.key == 114:
-                    hasil_build = builder.build_random_map()
-                    hasil_build.print_map()
+                    hasil_build = builder.build_map()
+                    # hasil_build.print_map()
                 elif event.key == 119:
                     hasil_build.player_move("up")
                 elif event.key == 97:
@@ -97,9 +102,11 @@ def main():
 
                 # print("OBJECTIVE COORDINATE : ({0},{1})".format(hasil_build.objectives.x, hasil_build.objectives.y))
                 # print("Player Steps : {}".format(hasil_build.player.steps))
+                # CHECK GOAL
                 if hasil_build.tiles[hasil_build.goals.y][hasil_build.goals.x] == 3:
-                    hasil_build = builder.build_random_map()
-                    hasil_build.print_map()
+                    builder.current_level += 1
+                    hasil_build = builder.build_map()
+                    # hasil_build.print_map()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
