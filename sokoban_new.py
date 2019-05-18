@@ -1,5 +1,4 @@
 # IMPORT PYGAME AND OPENGL
-
 import pygame
 from pygame.locals import *
 from OpenGL.GL import *
@@ -8,20 +7,22 @@ from OpenGL.GLU import *
 # IMPORT CLASSES
 import Classes.Map as Map
 
-def main():
+# IMPORT GUI
+import UI.MainMenu as MainMenu
+import UI.NameInput as NameInput
+from PyQt5 import QtCore, QtGui, QtWidgets
+import sys
+
+def main(mode):
 
     # INIT PYGAME
-
     pygame.init()
     display = (800, 600)
     clock = pygame.time.Clock()
 
     # INIT PYGAME DISPLAY AND OPENGL
-
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     gluPerspective(45, display[0] / display[1], 0.1, 50.0)
-    # glTranslatef(0.0, 0.0, -5)
-    # glRotatef(45, 1, 0, 0)
     glTranslate(1,0,-5)
     glRotatef(45,1,0,0)
     glOrtho(0,800,0,800,0,1000,)
@@ -41,7 +42,7 @@ def main():
     # Set Game Mode
     # Mode 0 : Story
     # Mode 1 : Random
-    game_mode = 1
+    game_mode = mode
 
     # CREATE CLASSES
     builder = Map.Map_Builder()
@@ -52,17 +53,23 @@ def main():
     # MAIN GAME LOOP
     pygame.key.set_repeat(16,100)
 
-    while True:
+    in_game = True
+
+    while in_game:
         clock.tick(120)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                # pygame.quit()
+                in_game = False
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     mouse_rotate = True
                 elif event.button == 3:
                     mouse_move = True
+                elif event.button == 4: 
+                    translate_y += 25
+                elif event.button == 5: 
+                    translate_y -= 25
             elif event.type == MOUSEBUTTONUP:
                 mouse_rotate = False
                 mouse_move = False
@@ -106,28 +113,27 @@ def main():
                 if hasil_build.tiles[hasil_build.goals.y][hasil_build.goals.x] == 3:
                     builder.current_level += 1
                     hasil_build = builder.build_map()
-                    # hasil_build.print_map()
+        if in_game:
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+            draw_map(hasil_build)
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+            # TRANSLATE OBJECT IF MOUSE MOVED
+            glTranslatef(translate_x, translate_y, -z_position)
+            glRotatef(rotate_y/20.,1,0,0)
+            glRotatef(rotate_x/20.,0,1,0)
+            
+            # RESET ROTATE
+            rotate_x = 0
+            rotate_y = 0
+            translate_x = 0
+            translate_y = 0
+            z_position = 0
 
-        # glPushMatrix()
-        draw_map(hasil_build)
-
-        # TRANSLATE OBJECT IF MOUSE MOVED
-        glTranslatef(translate_x, translate_y, -z_position)
-        glRotatef(rotate_y/20.,1,0,0)
-        glRotatef(rotate_x/20.,0,1,0)
-        # glPopMatrix()
+            pygame.display.flip()
+        else:
+            pygame.quit()
+            MainWindow.show()
         
-        # RESET ROTATE
-        rotate_x = 0
-        rotate_y = 0
-        translate_x = 0
-        translate_y = 0
-        z_position = 0
-
-        pygame.display.flip()
-
 def draw_map(map):
 
     # Find Center Point Of The Map
@@ -135,27 +141,28 @@ def draw_map(map):
     center_y = len(map.tiles[0])/ 2 
     # print("Center X: {}\nCenter Y: {}".format(center_x,center_y))
 
+    # Set Cube Size
+    Cube_Size = 150
+
     # Draw Plane
     for i in range(len(map.tiles)):
         for j in range(len(map.tiles[0])):
-            draw_cube((j-center_x)*200,-200,(i-center_y)*-200,200,4)
-            draw_plane((j-center_x)*200,-200,(i-center_y)*-200,200,0)
+            draw_cube((j-center_x)*Cube_Size,-Cube_Size,(i-center_y)*-Cube_Size,Cube_Size,4)
+            draw_plane((j-center_x)*Cube_Size,-Cube_Size,(i-center_y)*-Cube_Size,Cube_Size,0)
 
     # Draw Walls, Player, Objectives, and Goals
     # 1 : Walls
     # 2 : Player
     # 3 : Objectives
     # 4 : Goals
-
     for i in range(len(map.tiles)):
         for j in range(len(map.tiles[0])):
             if map.tiles[i][j] != 0 and map.tiles[i][j] != 4:
-                draw_cube((j-center_x)*200,0,(i-center_y)*-200,200,map.tiles[i][j])
-                draw_plane((j-center_x)*200,0,(i-center_y)*-200,200,map.tiles[i][j])
+                draw_cube((j-center_x)*Cube_Size,0,(i-center_y)*-Cube_Size,Cube_Size,map.tiles[i][j])
+                draw_plane((j-center_x)*Cube_Size,0,(i-center_y)*-Cube_Size,Cube_Size,map.tiles[i][j])
             elif map.tiles[i][j] == 4:
-                draw_plane((j-center_x)*200,0,(i-center_y)*-200,200,map.tiles[i][j])
+                draw_plane((j-center_x)*Cube_Size,0,(i-center_y)*-Cube_Size,Cube_Size,map.tiles[i][j])
 
-# Cube Drawer
 def draw_cube( centerPosX, centerPosY, centerPosZ, edgeLength, mode):
     halfSideLength = edgeLength * 0.5
     vertices = (
@@ -273,9 +280,61 @@ def draw_plane( centerPosX, centerPosY, centerPosZ, edgeLength, mode):
     glDrawArrays(GL_QUADS,0,24)
     glDisableClientState(GL_VERTEX_ARRAY)
 
-def rotate3d(vetices):
-    new_vertices = vertices
-    return new_vertices
+def play_normal():
+    player_name = InputNameDialog.lineEdit.text()
+    print(player_name)
+    Dialog.close()
+    if player_name != '':
+        MainWindow.hide()
+        main(0)
+    else:
+        set_connect_play_normal()
     
+def play_time_attack():
+    player_name = InputNameDialog.lineEdit.text()
+    print(player_name)
+    Dialog.close()
+    if player_name != '':
+        MainWindow.hide()
+        main(1)
+    else:
+        set_connect_play_time_attack()
+
+def set_connect_play_normal():
+    InputNameDialog.setupUi(Dialog)
+    InputNameDialog.buttonBox.accepted.connect(play_normal)
+    Dialog.show()
+
+def set_connect_play_time_attack():
+    InputNameDialog.setupUi(Dialog)
+    InputNameDialog.buttonBox.accepted.connect(play_time_attack)
+    Dialog.show()
+
+def quit_app():
+    quit()
+
+# CALL GUI
+app = QtWidgets.QApplication(sys.argv)
+
+# MainWindow
+MainWindow = QtWidgets.QMainWindow()
+MainMenuWindow = MainMenu.Ui_MainWindow()
+MainMenuWindow.setupUi(MainWindow)
+
+# Connect MainWindows Button To An Event Handler
+MainMenuWindow.pushButton.clicked.connect(set_connect_play_normal)
+MainMenuWindow.pushButton_2.clicked.connect(set_connect_play_time_attack)
+MainMenuWindow.pushButton_4.clicked.connect(quit_app)
+
+# SHOW MainWindow
+MainWindow.show()
+
+# Dialog
+Dialog = QtWidgets.QDialog()
+InputNameDialog = NameInput.Ui_Dialog()
+InputNameDialog.setupUi(Dialog)
+
+sys.exit(app.exec_())
+
 # CALL MAIN
-main()
+# main(1)
