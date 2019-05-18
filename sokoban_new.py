@@ -56,12 +56,19 @@ def main(mode, player_name):
     steps_history = []
     # print(hasil_build)
 
+    # Create Countdown Timer
+    time_elapsed = 0
+    clocktick = 0
+
     # MAIN GAME LOOP
     pygame.key.set_repeat(16,100)
     in_game = True
 
     while in_game:
         clock.tick(120)
+        clocktick += clock.get_rawtime()
+        time_elapsed = clocktick // 1000
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_game = False
@@ -364,9 +371,26 @@ def quit_app():
     else:
         msgbox.close()
 
+def sort_highscore():
+    story = []
+    time_atk = []
+
+    for score in highscores:
+        if isinstance(score, Score.StoryScore):
+            story.append(score)
+        elif isinstance(score, Score.TimeAttackScore):
+            time_atk.append(score)
+
+    sorted_highscore = []
+    story.sort(key=lambda x: x.get_score_ttl(), reverse=False)
+    time_atk.sort(key=lambda x: x.levels, reverse=True)
+    return story + time_atk
+
+
 # Create Global Var Highscore
 highscores = []
 highscores = load_save()
+highscores = sort_highscore() 
 
 # CALL GUI
 app = QtWidgets.QApplication(sys.argv)

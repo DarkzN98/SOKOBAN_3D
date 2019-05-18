@@ -5,3 +5,6 @@ class StoryScore:
 
 	def get_data(self):
 		return "{} - {}".format(self.player_name, self.player_steps)
+
+	def get_score_ttl(self):
+		return sum(self.player_steps)
