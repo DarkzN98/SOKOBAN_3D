@@ -6,14 +6,19 @@ from OpenGL.GLU import *
 
 # IMPORT CLASSES
 import Classes.Map as Map
+import Classes.Score as Score
 
 # IMPORT GUI
-import UI.MainMenu as MainMenu
-import UI.NameInput as NameInput
+import UI.MainMenu as MainMenuUI
+import UI.NameInput as NameInputUI
+import UI.Highscore as HighscoreUI
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 
-def main(mode):
+# IMPORT PICKLE
+import pickle
+
+def main(mode, player_name):
 
     # INIT PYGAME
     pygame.init()
@@ -48,18 +53,17 @@ def main(mode):
     builder = Map.Map_Builder()
     builder.set_mode(game_mode)
     hasil_build = builder.build_map()
+    steps_history = []
     # print(hasil_build)
 
     # MAIN GAME LOOP
     pygame.key.set_repeat(16,100)
-
     in_game = True
 
     while in_game:
         clock.tick(120)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                # pygame.quit()
                 in_game = False
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
@@ -85,7 +89,6 @@ def main(mode):
                 # print(event)
                 if event.key == 114:
                     hasil_build = builder.build_map()
-                    # hasil_build.print_map()
                 elif event.key == 119:
                     hasil_build.player_move("up")
                 elif event.key == 97:
@@ -111,8 +114,17 @@ def main(mode):
                 # print("Player Steps : {}".format(hasil_build.player.steps))
                 # CHECK GOAL
                 if hasil_build.tiles[hasil_build.goals.y][hasil_build.goals.x] == 3:
+                    steps_history.append(hasil_build.player.steps)
                     builder.current_level += 1
                     hasil_build = builder.build_map()
+                    if hasil_build == "DONE":
+                        in_game = False
+                        if mode == 0:
+                            highscores.append(Score.StoryScore(player_name, steps_history))
+                            save_save()
+                        elif mode == 1:
+                            highscores.append(Score.TimeAttackScore(player_name, builder.current_level))
+                            save_save()
         if in_game:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             draw_map(hasil_build)
@@ -282,23 +294,40 @@ def draw_plane( centerPosX, centerPosY, centerPosZ, edgeLength, mode):
 
 def play_normal():
     player_name = InputNameDialog.lineEdit.text()
-    print(player_name)
+    # print(player_name)
     Dialog.close()
     if player_name != '':
         MainWindow.hide()
-        main(0)
+        main(0, player_name)
     else:
         set_connect_play_normal()
     
 def play_time_attack():
     player_name = InputNameDialog.lineEdit.text()
-    print(player_name)
+    # print(player_name)
     Dialog.close()
     if player_name != '':
         MainWindow.hide()
-        main(1)
+        main(1, player_name)
     else:
         set_connect_play_time_attack()
+
+def show_highscore():
+    HighscoreMainWindow.show()
+    model = QtGui.QStandardItemModel(HighscoreWindow.listView)
+    model2 = QtGui.QStandardItemModel(HighscoreWindow.listView_2)
+    for score in highscores:
+        print(score.get_data())
+        item = QtGui.QStandardItem(score.get_data())
+        if isinstance(score, Score.StoryScore):
+            model.appendRow(item)
+        elif isinstance(score, Score.TimeAttackScore):
+            model2.appendRow(item)
+    HighscoreWindow.listView.setModel(model)
+    HighscoreWindow.listView_2.setModel(model2)
+
+def close_highscore():
+    HighscoreMainWindow.close()
 
 def set_connect_play_normal():
     InputNameDialog.setupUi(Dialog)
@@ -310,20 +339,47 @@ def set_connect_play_time_attack():
     InputNameDialog.buttonBox.accepted.connect(play_time_attack)
     Dialog.show()
 
+def load_save():
+    p = open("Saves/savedata.bin","rb")
+    load_files = pickle.load(p)
+    p.close()
+    print("Success Load Data!")
+    return load_files
+
+def save_save():
+    p = open("Saves/savedata.bin","wb")
+    pickle.dump(highscores, p)
+    p.close()
+    print("Success Save Data!")
+
 def quit_app():
-    quit()
+    msgbox = QtWidgets.QMessageBox()
+    msgbox.setIcon(QtWidgets.QMessageBox.Question)
+    msgbox.setText("Are You Sure Want To Quit?")
+    msgbox.setWindowTitle("Quit Confirmation")
+    msgbox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+
+    if msgbox.exec_() == QtWidgets.QMessageBox.Yes:
+        quit()
+    else:
+        msgbox.close()
+
+# Create Global Var Highscore
+highscores = []
+highscores = load_save()
 
 # CALL GUI
 app = QtWidgets.QApplication(sys.argv)
 
 # MainWindow
 MainWindow = QtWidgets.QMainWindow()
-MainMenuWindow = MainMenu.Ui_MainWindow()
+MainMenuWindow = MainMenuUI.Ui_MainWindow()
 MainMenuWindow.setupUi(MainWindow)
 
 # Connect MainWindows Button To An Event Handler
 MainMenuWindow.pushButton.clicked.connect(set_connect_play_normal)
 MainMenuWindow.pushButton_2.clicked.connect(set_connect_play_time_attack)
+MainMenuWindow.pushButton_3.clicked.connect(show_highscore)
 MainMenuWindow.pushButton_4.clicked.connect(quit_app)
 
 # SHOW MainWindow
@@ -331,8 +387,14 @@ MainWindow.show()
 
 # Dialog
 Dialog = QtWidgets.QDialog()
-InputNameDialog = NameInput.Ui_Dialog()
+InputNameDialog = NameInputUI.Ui_Dialog()
 InputNameDialog.setupUi(Dialog)
+
+# Highscore Window
+HighscoreMainWindow = QtWidgets.QMainWindow()
+HighscoreWindow = HighscoreUI.Ui_HighscoreWindow()
+HighscoreWindow.setupUi(HighscoreMainWindow)
+HighscoreWindow.BtnBack.clicked.connect(close_highscore)
 
 sys.exit(app.exec_())
 

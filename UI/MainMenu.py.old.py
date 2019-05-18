@@ -11,10 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.setEnabled(True)
-        MainWindow.resize(350, 197)
-        MainWindow.setMinimumSize(QtCore.QSize(350, 197))
-        MainWindow.setMaximumSize(QtCore.QSize(350, 197))
+        MainWindow.resize(350, 204)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label = QtWidgets.QLabel(self.centralwidget)
@@ -81,13 +78,4 @@ class Ui_MainWindow(object):
         self.pushButton_3.setText(_translate("MainWindow", "High Scores"))
         self.pushButton_4.setText(_translate("MainWindow", "Quit"))
 
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
 
