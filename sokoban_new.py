@@ -26,12 +26,18 @@ def main(mode, player_name):
     clock = pygame.time.Clock()
 
     # INIT PYGAME DISPLAY AND OPENGL
-    pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+    screen = pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     gluPerspective(45, display[0] / display[1], 0.1, 50.0)
     glTranslate(1,0,-5)
     glRotatef(45,1,0,0)
     glOrtho(0,800,0,800,0,1000,)
     glEnable(GL_DEPTH_TEST)
+
+    # INIT FONT
+    pygame.font.init()
+    
+    # Debug Option
+    enable_fps_counter = True
 
     # RENDER POSITION
     rotate_x = 0
@@ -59,6 +65,7 @@ def main(mode, player_name):
     # Create Countdown Timer
     time_elapsed = 0
     clocktick = 0
+    game_time = 60
 
     # MAIN GAME LOOP
     pygame.key.set_repeat(16,100)
@@ -117,21 +124,27 @@ def main(mode, player_name):
                 elif event.key == 101:
                     rotate_x += 50
 
-                # print("OBJECTIVE COORDINATE : ({0},{1})".format(hasil_build.objectives.x, hasil_build.objectives.y))
-                # print("Player Steps : {}".format(hasil_build.player.steps))
-                # CHECK GOAL
-                if hasil_build.tiles[hasil_build.goals.y][hasil_build.goals.x] == 3:
-                    steps_history.append(hasil_build.player.steps)
-                    builder.current_level += 1
-                    hasil_build = builder.build_map()
-                    if hasil_build == "DONE":
-                        in_game = False
-                        if mode == 0:
-                            highscores.append(Score.StoryScore(player_name, steps_history))
-                            save_save()
-                        elif mode == 1:
-                            highscores.append(Score.TimeAttackScore(player_name, builder.current_level))
-                            save_save()
+        # print("OBJECTIVE COORDINATE : ({0},{1})".format(hasil_build.objectives.x, hasil_build.objectives.y))
+        # print("Player Steps : {}".format(hasil_build.player.steps))
+        # CHECK GOAL
+        if hasil_build.tiles[hasil_build.goals.y][hasil_build.goals.x] == 3:
+            steps_history.append(hasil_build.player.steps)
+            builder.current_level += 1
+            hasil_build = builder.build_map()
+
+        if time_elapsed >= game_time and game_mode == 1:
+            hasil_build = "DONE"
+        if hasil_build == "DONE":
+            in_game = False
+            if mode == 0:
+                highscores.append(Score.StoryScore(player_name, steps_history))
+                sort_highscore()
+                save_save()
+            elif mode == 1:
+                highscores.append(Score.TimeAttackScore(player_name, builder.current_level))
+                sort_highscore()
+                save_save()
+
         if in_game:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             draw_map(hasil_build)
@@ -148,7 +161,14 @@ def main(mode, player_name):
             translate_y = 0
             z_position = 0
 
+            if enable_fps_counter:
+                draw_text("FPS: {}".format(clock.get_fps()), -display[0], display[1], -5, 12)
+
+            if game_mode == 1: 
+                draw_text("Time Remaining: {}".format((game_time-time_elapsed)), -display[0], display[1]+display[1]//4, -5, 64)
+                # print("Time Elapsed  : {}\nTime Remaining: {}".format(time_elapsed, (game_time-time_elapsed)))
             pygame.display.flip()
+                
         else:
             pygame.quit()
             MainWindow.show()
@@ -386,6 +406,12 @@ def sort_highscore():
     time_atk.sort(key=lambda x: x.levels, reverse=True)
     return story + time_atk
 
+def draw_text(text, x_pos, y_pos, z_pos, size):
+    font = pygame.font.Font ("Fonts/Roboto.ttf", size)
+    textSurface = font.render(text, True, (255,255,255,255), (0,0,0,255))     
+    textData = pygame.image.tostring(textSurface, "RGBA", True)     
+    glRasterPos3d(x_pos, y_pos, z_pos)     
+    glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
 
 # Create Global Var Highscore
 highscores = []
