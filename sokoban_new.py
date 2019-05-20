@@ -4,6 +4,10 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+# IMPORT PYGAME MENU
+import pygameMenu
+from pygameMenu.locals import *
+
 # IMPORT CLASSES
 import Classes.Map as Map
 import Classes.Score as Score
@@ -30,7 +34,7 @@ def main(mode, player_name):
     gluPerspective(45, display[0] / display[1], 0.1, 50.0)
     glTranslate(1,0,-5)
     glRotatef(45,1,0,0)
-    glOrtho(0,800,0,800,0,1000,)
+    glOrtho(0,800,0,800,0,1000)
     glEnable(GL_DEPTH_TEST)
 
     # INIT FONT
@@ -66,7 +70,10 @@ def main(mode, player_name):
     # Create Countdown Timer
     time_elapsed = 0
     clocktick = 0
-    game_time = 60
+    game_time = 10
+
+    # Ger Global Ref
+    global highscores
 
     # MAIN GAME LOOP
     pygame.key.set_repeat(16,100)
@@ -139,11 +146,11 @@ def main(mode, player_name):
             in_game = False
             if mode == 0:
                 highscores.append(Score.StoryScore(player_name, steps_history))
-                sort_highscore()
+                highscores = sort_highscore()
                 save_save()
             elif mode == 1:
                 highscores.append(Score.TimeAttackScore(player_name, builder.current_level))
-                sort_highscore()
+                highscores = sort_highscore()
                 save_save()
 
         if in_game:
@@ -167,6 +174,7 @@ def main(mode, player_name):
 
             if game_mode == 1: 
                 draw_text("Time Remaining: {}".format((game_time-time_elapsed)), -display[0], display[1]+display[1]//4, -5, 64)
+                draw_text("Score : {}".format(builder.current_level), -display[0], display[1]+350, -5, 16)
                 # print("Time Elapsed  : {}\nTime Remaining: {}".format(time_elapsed, (game_time-time_elapsed)))
             pygame.display.flip()
         else:
@@ -174,6 +182,9 @@ def main(mode, player_name):
             MainWindow.show()
         
 def draw_map(map):
+
+    # Set Box Size
+    box_size = 200 
 
     # Find Center Point Of The Map
     center_x = len(map.tiles) / 2 
@@ -328,7 +339,7 @@ def play_normal():
         main(0, player_name)
     else:
         set_connect_play_normal()
-    
+
 def play_time_attack():
     player_name = InputNameDialog.lineEdit.text()
     # print(player_name)
