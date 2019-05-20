@@ -58,6 +58,7 @@ def main(mode, player_name):
     # CREATE CLASSES
     builder = Map.Map_Builder()
     builder.set_mode(game_mode)
+    # builder.current_level = 4
     hasil_build = builder.build_map()
     steps_history = []
     # print(hasil_build)
@@ -168,7 +169,6 @@ def main(mode, player_name):
                 draw_text("Time Remaining: {}".format((game_time-time_elapsed)), -display[0], display[1]+display[1]//4, -5, 64)
                 # print("Time Elapsed  : {}\nTime Remaining: {}".format(time_elapsed, (game_time-time_elapsed)))
             pygame.display.flip()
-                
         else:
             pygame.quit()
             MainWindow.show()
@@ -344,7 +344,6 @@ def show_highscore():
     model = QtGui.QStandardItemModel(HighscoreWindow.listView)
     model2 = QtGui.QStandardItemModel(HighscoreWindow.listView_2)
     for score in highscores:
-        print(score.get_data())
         item = QtGui.QStandardItem(score.get_data())
         if isinstance(score, Score.StoryScore):
             model.appendRow(item)
@@ -415,6 +414,7 @@ def draw_text(text, x_pos, y_pos, z_pos, size):
 
 # Create Global Var Highscore
 highscores = []
+save_save()
 highscores = load_save()
 highscores = sort_highscore() 
 
