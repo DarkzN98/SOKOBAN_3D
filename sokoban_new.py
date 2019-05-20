@@ -69,7 +69,10 @@ def main(mode, player_name):
     # Create Countdown Timer
     time_elapsed = 0
     clocktick = 0
-    game_time = 60
+    game_time = 10
+
+    # Ger Global Ref
+    global highscores
 
     # MAIN GAME LOOP
     pygame.key.set_repeat(16,100)
@@ -142,11 +145,11 @@ def main(mode, player_name):
             in_game = False
             if mode == 0:
                 highscores.append(Score.StoryScore(player_name, steps_history))
-                sort_highscore()
+                highscores = sort_highscore()
                 save_save()
             elif mode == 1:
                 highscores.append(Score.TimeAttackScore(player_name, builder.current_level))
-                sort_highscore()
+                highscores = sort_highscore()
                 save_save()
 
         if in_game:
@@ -170,6 +173,7 @@ def main(mode, player_name):
 
             if game_mode == 1: 
                 draw_text("Time Remaining: {}".format((game_time-time_elapsed)), -display[0], display[1]+display[1]//4, -5, 64)
+                draw_text("Score : {}".format(builder.current_level), -display[0], display[1]+350, -5, 16)
                 # print("Time Elapsed  : {}\nTime Remaining: {}".format(time_elapsed, (game_time-time_elapsed)))
             pygame.display.flip()
                 
