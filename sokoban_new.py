@@ -5,6 +5,10 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+# IMPORT PYGAME MENU
+import pygameMenu
+from pygameMenu.locals import *
+
 # IMPORT CLASSES
 import Classes.Map as Map
 
@@ -18,14 +22,34 @@ def main():
 
     # INIT PYGAME DISPLAY AND OPENGL
 
-    pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+    surface = pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     gluPerspective(45, display[0] / display[1], 0.1, 50.0)
     # glTranslatef(0.0, 0.0, -5)
     # glRotatef(45, 1, 0, 0)
     glTranslate(1,0,-5)
     glRotatef(45,1,0,0)
-    glOrtho(0,800,0,800,0,1000,)
+    glOrtho(0,800,0,800,0,1000)
     glEnable(GL_DEPTH_TEST)
+
+    # INIT PYGAME MENU
+    pygame.font.init()
+    font = pygame.font.Font("Fonts/Roboto-Regular.ttf",32)
+    main_menu = pygameMenu.Menu(surface,
+                            bgfun=main_background,
+                            color_selected=COLOR_WHITE,
+                            font=pygameMenu.fonts.FONT_BEBAS,
+                            font_color=COLOR_BLACK,
+                            font_size=30,
+                            menu_alpha=100,
+                            menu_color=MENU_BACKGROUND_COLOR,
+                            menu_height=int(WINDOW_SIZE[1] * 0.6),
+                            menu_width=int(WINDOW_SIZE[0] * 0.6),
+                            onclose=PYGAME_MENU_DISABLE_CLOSE,
+                            option_shadow=False,
+                            title='Main menu',
+                            window_height=WINDOW_SIZE[1],
+                            window_width=WINDOW_SIZE[0]
+                            )
 
     # RENDER POSITION
     rotate_x = 0
@@ -130,6 +154,9 @@ def main():
 
 def draw_map(map):
 
+    # Set Box Size
+    box_size = 200 
+
     # Find Center Point Of The Map
     center_x = len(map.tiles) / 2 
     center_y = len(map.tiles[0])/ 2 
@@ -138,8 +165,8 @@ def draw_map(map):
     # Draw Plane
     for i in range(len(map.tiles)):
         for j in range(len(map.tiles[0])):
-            draw_cube((j-center_x)*200,-200,(i-center_y)*-200,200,4)
-            draw_plane((j-center_x)*200,-200,(i-center_y)*-200,200,0)
+            draw_cube((j-center_x)*box_size,-box_size,(i-center_y)*-box_size,box_size,4)
+            draw_plane((j-center_x)*box_size,-box_size,(i-center_y)*-box_size,box_size,0)
 
     # Draw Walls, Player, Objectives, and Goals
     # 1 : Walls
@@ -150,10 +177,10 @@ def draw_map(map):
     for i in range(len(map.tiles)):
         for j in range(len(map.tiles[0])):
             if map.tiles[i][j] != 0 and map.tiles[i][j] != 4:
-                draw_cube((j-center_x)*200,0,(i-center_y)*-200,200,map.tiles[i][j])
-                draw_plane((j-center_x)*200,0,(i-center_y)*-200,200,map.tiles[i][j])
+                draw_cube((j-center_x)*box_size,0,(i-center_y)*-box_size,box_size,map.tiles[i][j])
+                draw_plane((j-center_x)*box_size,0,(i-center_y)*-box_size,box_size,map.tiles[i][j])
             elif map.tiles[i][j] == 4:
-                draw_plane((j-center_x)*200,0,(i-center_y)*-200,200,map.tiles[i][j])
+                draw_plane((j-center_x)*box_size,0,(i-center_y)*-box_size,box_size,map.tiles[i][j])
 
 # Cube Drawer
 def draw_cube( centerPosX, centerPosY, centerPosZ, edgeLength, mode):
@@ -272,10 +299,6 @@ def draw_plane( centerPosX, centerPosY, centerPosZ, edgeLength, mode):
     glVertexPointer(3,GL_FLOAT,0,vertices)
     glDrawArrays(GL_QUADS,0,24)
     glDisableClientState(GL_VERTEX_ARRAY)
-
-def rotate3d(vetices):
-    new_vertices = vertices
-    return new_vertices
     
 # CALL MAIN
 main()
