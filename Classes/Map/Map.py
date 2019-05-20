@@ -178,7 +178,8 @@ class Map_Builder:
             self.place_objective_at(new_map,3,3)
         else:
             print("Story Mode Done!")
-            quit()
+            # quit()
+            return "DONE"
 
         return new_map
 
