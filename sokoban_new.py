@@ -70,7 +70,7 @@ def main(mode, player_name):
     # Create Countdown Timer
     time_elapsed = 0
     clocktick = 0
-    game_time = 10
+    game_time = 30
 
     # Ger Global Ref
     global highscores
@@ -425,7 +425,10 @@ def draw_text(text, x_pos, y_pos, z_pos, size):
 
 # Create Global Var Highscore
 highscores = []
-save_save()
+
+# RESET HIGHSCORE
+# save_save()
+
 highscores = load_save()
 highscores = sort_highscore() 
 
